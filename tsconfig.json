@@ -1,13 +1,16 @@
 {
-    "compilerOptions": {
-      "target": "ES2021",
-      "module": "commonjs",
-      "strict": true,
-      "baseUrl": ".",
-      "paths": {
-        "@shared-types/*": ["packages/shared-types/src/*"],
-        "@utils/*": ["packages/utils/src/*"]
-      }
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "commonjs",
+    "strict": true,
+    "baseUrl": "./",
+    "ignoreDeprecations": "5.0",
+    "paths": {
+      "@shared-types/*": ["packages/shared-types/src/*"],
+      "@utils/*": ["packages/utils/src/*"]
     },
-    "exclude": ["node_modules", "dist"]
+    "rootDirs": ["packages"]
+  },
+  "include": ["packages/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
