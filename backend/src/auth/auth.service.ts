@@ -1,51 +1,55 @@
-import * as bcrypt from 'bcrypt';
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
-    private jwtService: JwtService,
+    private jwt: JwtService,
   ) {}
 
   async signUp(email: string, password: string) {
-    if (!email || !password) {
-      throw new BadRequestException('Email and password are required');
+    const existing = await this.prisma.user.findUnique({ where: { email } });
+
+    if (existing) {
+      throw new BadRequestException('Email already registered');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(password, 10);
 
     const user = await this.prisma.user.create({
-      data: {
-        email,
-        passwordHash: hashedPassword, // make sure this matches your schema
-      },
+      data: { email, passwordHash: hashed },
     });
 
-    return this.issueToken(user.id, user.email);
+    return {
+      id: user.id,
+      email: user.email,
+    };
   }
 
   async login(email: string, password: string) {
-    if (!email || !password) {
-      throw new BadRequestException('Email and password are required');
-    }
-
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
 
-    if (!user) throw new BadRequestException('Invalid credentials');
+    if (!user) {
+      throw new BadRequestException('Invalid email or password');
+    }
 
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) throw new BadRequestException('Invalid credentials');
+    const match = await bcrypt.compare(password, user.passwordHash);
 
-    return this.issueToken(user.id, user.email);
-  }
+    if (!match) {
+      throw new BadRequestException('Invalid email or password');
+    }
 
-  private issueToken(userId: number, email: string) {
-    const payload = { sub: userId, email };
-    return { access_token: this.jwtService.sign(payload) };
+    const token = await this.jwt.signAsync({
+      id: user.id,
+      email: user.email,
+    });
+
+    return { access_token: token };
   }
 }

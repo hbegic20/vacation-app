@@ -3,5 +3,3 @@ node_modules
 dist
 .next
 build
-
-/generated/prisma
