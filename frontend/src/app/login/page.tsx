@@ -1,49 +1,36 @@
+// src/app/login/page.tsx
 'use client';
-
 import { useState } from 'react';
+import { apiFetch } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const router = useRouter();
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
+  const handleLogin = async (e: any) => {
+    e.preventDefault();
+    try {
+      await apiFetch('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+      // token is set via httpOnly cookie by backend
+      router.push('/'); // redirect to home or wherever
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
+    }
+  };
 
-        const response = await fetch('/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-            credentials: 'include',
-        });
-
-        const data = await response.json();
-        console.log('Login response:', data);
-    };
-
-    return (
-        <form onSubmit={handleLogin} className="max-w-md mx-auto mt-10">
-            <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 mb-4 border border-gray-300 rounded"
-                required
-            />
-            <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-2 mb-4 border border-gray-300 rounded"
-                required
-            />
-            <button
-                type="submit"
-                className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-                Log In
-            </button>
-        </form>
-    );
+  return (
+    <form onSubmit={handleLogin} className="space-y-4 max-w-md">
+      <h2>Login</h2>
+      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
+      <input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="Password" />
+      <button type="submit">Login</button>
+      {error && <div style={{ color: 'red' }}>{error}</div>}
+    </form>
+  );
 }

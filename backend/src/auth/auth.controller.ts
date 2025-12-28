@@ -33,7 +33,7 @@ export class AuthController {
     res.cookie('auth_token', token.access_token, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: false, // true in production
+      secure: false,
     });
 
     return { message: 'Logged in' };

@@ -1,24 +1,27 @@
+// src/hooks/useUser.ts
 'use client';
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from 'react';
+import { apiFetch } from '@/lib/api';
 
 export function useUser() {
-    const [user, serUser] = useState<{ email: string } | null>(null);
+  const [user, setUser] = useState<unknown>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-    useEffect(() => {
-        fetch("/auth/me", {
-            credentials: 'include',
-        })
-        .then((res) => {
-            if(!res.ok) return null;
-            return res.json();
-        })
-        .then((data) => {
-            serUser(data);
-        })
-        .catch(() => {
-            serUser(null);
-        });
-    }, []);
+  const fetchUser = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetch('/auth/me');
+      setUser(data);
+    } catch (err) {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    return user;
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
+  return { user, loading, refresh: fetchUser };
 }
