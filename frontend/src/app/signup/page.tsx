@@ -8,20 +8,23 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
 
-  const handleSignup = async (e: any) => {
+  const handleSignup = async (e: unknown) => {
     e.preventDefault();
     try {
-      const res = await apiFetch('/auth/signup', {
+      const data = await apiFetch('/auth/signup', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
-      setMessage('Signup successful — please login');
+
+      localStorage.setItem('token', data.access_token);
+      setMessage('Signup successful — logged in!');
       setEmail('');
       setPassword('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMessage(err.message || 'Error');
     }
   };
+
 
   return (
     <form

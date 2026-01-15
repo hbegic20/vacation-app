@@ -14,6 +14,12 @@ import { LoginDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
+interface AuthUser {
+  userId: string;
+  email: string;
+  role: 'ADMIN' | 'EMPLOYEE';
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -41,7 +47,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  me(@Req() req: Request & { user: any }) {
+  me(@Req() req: Request & { user: AuthUser }) {
     return req.user;
   }
 
